@@ -2,6 +2,8 @@ package jsonconfig
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
 )
 
@@ -11,7 +13,7 @@ import (
 type JsonConfigReader interface {
 	GetSection(name string) JsonConfigReader
 	GetKey(key string) JsonConfigReader
-	GetValue() string
+	GetValue() (interface{}, error)
 }
 
 // JsonConfig holds the filename and parsed JSON data
@@ -22,8 +24,18 @@ type JsonConfig struct {
 
 // GetValue gets the value of the current level in the parsed
 // JSON tree
-func (jc *JsonConfig) GetValue() string {
-	return jc.Parsed.(string)
+func (jc *JsonConfig) GetValue() (interface{}, error) {
+	switch t := jc.Parsed.(type) {
+	default:
+		return nil, errors.New(fmt.Sprintf("Unknown type: %T", t))
+
+	case string:
+		return jc.Parsed.(string), nil
+
+	case float64:
+		return jc.Parsed.(float64), nil
+	}
+
 }
 
 // GetKey returns a JsonConfigReader containing the contents of

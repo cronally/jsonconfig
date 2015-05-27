@@ -3,5 +3,9 @@
 		"home": {
 			"title": "this is a title"
 		}
+	},
+	"various": {
+		"numbers": 10,
+		"money": 10.50
 	}
 }
