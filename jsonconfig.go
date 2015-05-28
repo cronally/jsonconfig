@@ -1,6 +1,7 @@
 package jsonconfig
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,7 +14,9 @@ import (
 type JsonConfigReader interface {
 	GetSection(name string) JsonConfigReader
 	GetKey(key string) JsonConfigReader
-	GetValue() (interface{}, error)
+	GetString() (string, error)
+	GetFloat() (float64, error)
+	GetInt() (int64, error)
 }
 
 // JsonConfig holds the filename and parsed JSON data
@@ -22,18 +25,54 @@ type JsonConfig struct {
 	Parsed   interface{}
 }
 
-// GetValue gets the value of the current level in the parsed
+// GetString gets the string value of the current level in the parsed
 // JSON tree
-func (jc *JsonConfig) GetValue() (interface{}, error) {
+func (jc *JsonConfig) GetString() (string, error) {
 	switch t := jc.Parsed.(type) {
 	default:
-		return nil, errors.New(fmt.Sprintf("Unknown type: %T", t))
+		return "", errors.New(fmt.Sprintf("Unknown type: %T", t))
+
+	case json.Number:
+		return t.String(), nil
 
 	case string:
 		return jc.Parsed.(string), nil
+	}
 
-	case float64:
-		return jc.Parsed.(float64), nil
+}
+
+// GetFloat gets the string value of the current level in the parsed
+// JSON tree
+func (jc *JsonConfig) GetFloat() (float64, error) {
+	switch t := jc.Parsed.(type) {
+	default:
+		return 0, errors.New(fmt.Sprintf("Unknown type: %T", t))
+
+	case json.Number:
+		v, err := t.Float64()
+		if err != nil {
+			return 0, err
+		}
+		return v, nil
+
+	}
+
+}
+
+// GetInt gets the string value of the current level in the parsed
+// JSON tree
+func (jc *JsonConfig) GetInt() (int64, error) {
+	switch t := jc.Parsed.(type) {
+	default:
+		return 0, errors.New(fmt.Sprintf("Unknown type: %T", t))
+
+	case json.Number:
+		v, err := t.Int64()
+		if err != nil {
+			return 0, err
+		}
+		return v, nil
+
 	}
 
 }
@@ -63,7 +102,9 @@ func NewJsonConfig(filename string) (*JsonConfig, error) {
 		return nil, err
 	}
 
-	err = json.Unmarshal(data, &j)
+	decoder := json.NewDecoder(bytes.NewBuffer(data))
+	decoder.UseNumber()
+	err = decoder.Decode(&j)
 	if err != nil {
 		return nil, err
 	}

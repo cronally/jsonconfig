@@ -15,7 +15,7 @@ func TestReadConfig(t *testing.T) {
 		t.Error(err)
 	}
 
-	v, err := jcfg.GetSection(section).GetSection(nextSection).GetKey(key).GetValue()
+	v, err := jcfg.GetSection(section).GetSection(nextSection).GetKey(key).GetString()
 	if err != nil {
 		t.Error(err)
 	}
@@ -33,25 +33,25 @@ func TestTypes(t *testing.T) {
 		t.Error(err)
 	}
 
-	var numbers float64
+	var numbers int64
 	numbers = 10
-	v, err := jcfg.GetSection(section).GetKey("numbers").GetValue()
+	vint, err := jcfg.GetSection(section).GetKey("numbers").GetInt()
 	if err != nil {
 		t.Error(err)
 	}
 
-	if v != numbers {
-		t.Errorf("Expected '%f'", numbers)
+	if vint != numbers {
+		t.Errorf("Expected '%f'", vint)
 	}
 
 	var money float64
 	money = 10.50
-	v, err = jcfg.GetSection(section).GetKey("money").GetValue()
+	vfloat, err := jcfg.GetSection(section).GetKey("money").GetFloat()
 	if err != nil {
 		t.Error(err)
 	}
 
-	if v != money {
+	if vfloat != money {
 		t.Errorf("Expected '%f'", money)
 	}
 }
